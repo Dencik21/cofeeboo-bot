@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cofeeboo ☕</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: #000;
+        color: #fff;
+        font-family: "Arial", sans-serif;
+        height: 100vh;
+        width: 100vw;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      /* 🎬 ВИДЕО НА ВЕСЬ ЭКРАН */
+      video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 1;
+        transition: all 1.5s ease-in-out;
+      }
+
+      /* 💫 После окончания видео: уменьшение и переход в логотип */
+      .video-small {
+        width: 120px;
+        height: 120px;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-radius: 50%;
+        object-fit: cover;
+        position: absolute;
+        z-index: 5;
+        box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
+      }
+
+      /* 📜 КОНТЕНТ */
+      .content {
+        position: relative;
+        z-index: 2;
+        opacity: 0;
+        transition: opacity 1.5s ease-in;
+        text-align: center;
+      }
+
+      .visible {
+        opacity: 1;
+      }
+
+      h1 {
+        font-size: 28px;
+        margin-bottom: 15px;
+        font-weight: 600;
+      }
+
+      p {
+        font-size: 16px;
+        margin: 5px 0;
+        color: #ccc;
+      }
+
+      button {
+        background: #5e3eff;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 10px;
+        color: white;
+        font-size: 16px;
+        margin-top: 20px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      button:hover {
+        background: #7b5bff;
+      }
+
+      /* ☕ Лёгкий градиент поверх видео */
+      .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, #000 100%);
+        z-index: 2;
+        opacity: 0;
+        transition: opacity 1.5s ease-in;
+      }
+
+      .overlay.visible {
+        opacity: 1;
+      }
+    </style>
+    /* === МЕНЮ === */
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  padding: 20px;
+  overflow-y: auto;
+  max-height: 80vh; /* появляется прокрутка */
+}
+
+.category {
+  text-align: left;
+}
+
+.category h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #ffde9f;
+  text-shadow: 0 0 8px rgba(255, 222, 159, 0.3);
+}
+
+/* === СЕТКА НАПИТКОВ === */
+.drinks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 15px;
+  justify-items: center;
+}
+
+/* === КАРТОЧКА === */
+.drink-card {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px;
+  width: 140px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.drink-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);
+}
+
+/* === ИЗОБРАЖЕНИЕ === */
+.drink-card img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* === НАЗВАНИЕ И ЦЕНА === */
+.drink-card h3 {
+  font-size: 14px;
+  margin: 8px 0 4px;
+  color: #fff;
+}
+
+.drink-card p {
+  font-size: 13px;
+  color: #ccc;
+  margin: 0;
+}
+
+/* === КНОПКА "ДОБАВИТЬ" === */
+.drink-card button {
+  background: #5e3eff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: white;
+  font-size: 13px;
+  margin-top: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.drink-card button:hover {
+  background: #7b5bff;
+}
+  </style> 
+
+  </head>
+
+  <body>
+    <!-- ☕ ВИДЕО -->
+    <video id="intro" autoplay muted playsinline onended="shrinkVideo()">
+      <source src="/static/intro.mp4" type="video/mp4" />
+    </video>
+
+    <!-- 🌫️ ЭФФЕКТ ЗАТЕМНЕНИЯ -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- 📜 КОНТЕНТ -->
+   <div class="content" id="content">
+  <h1>Меню Cofeeboo ☕</h1>
+  <div class="menu"></div>
+</div>
+ 
+    <script>
+      function shrinkVideo() {
+        const video = document.getElementById("intro");
+        const content = document.getElementById("content");
+        const overlay = document.getElementById("overlay");
+
+        // Уменьшаем видео
+        video.classList.add("video-small");
+
+        // Включаем плавное затемнение и контент
+        setTimeout(() => {
+          overlay.classList.add("visible");
+          content.classList.add("visible");
+        }, 1000);
+      }
+    </script>
+    <script src="/static/js/drinks.js?v=1"></script>
+
+  </body>
+</html>

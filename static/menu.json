@@ -1,0 +1,27 @@
+[
+  {
+    "name": "Эспрессо",
+    "price": 2.00,
+    "image": "/static/images/espresso.png",
+    "category": "Горячие напитки"
+  },
+  {
+    "name": "Капучино",
+    "price": 3.20,
+    "image": "/static/images/cappuccino.png",
+    "category": "Горячие напитки"
+  },
+  {
+    "name": "Латте",
+    "price": 3.50,
+    "image": "/static/images/latte.png",
+    "category": "С молоком"
+  },
+  {
+    "name": "Айс Латте",
+    "price": 3.80,
+    "image": "/static/images/iced-latte.png",
+    "category": "Холодные напитки"
+  }
+]
+

@@ -1,56 +1,74 @@
 import asyncio
+import logging
+import os
 from aiogram import Bot, Dispatcher, types
-from aiogram.filters import CommandStart, Command
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.filters import CommandStart
+from aiogram.types import Message
+from aiohttp import web
+from aiogram.client.default import DefaultBotProperties
 
-BOT_TOKEN = "8426171093:AAH9_v8WdYARjcfoRnkKC4_3QZnQWU93H2A"
+# === НАСТРОЙКИ ===
+BOT_TOKEN = os.getenv("BOT_TOKEN", "8426171093:AAH9_v8WdYARjcfoRnkKC4_3QZnQWU93H2A")
+PORT = int(os.environ.get("PORT", 8080))  # Railway автоматически подставит свой порт
 
-bot = Bot(BOT_TOKEN)
+logging.basicConfig(level=logging.INFO)
+
+# === ИНИЦИАЛИЗАЦИЯ БОТА ===
+bot = Bot(BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
 
-# --- Команда /start ---
+# === КОМАНДА /start ===
 @dp.message(CommandStart())
 async def start(message: Message):
-    keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(text="💫 О нас", callback_data="about"),
-                InlineKeyboardButton(text="📞 Контакты", callback_data="contact")
-            ],
-            [
-                InlineKeyboardButton(text="❓ Помощь", callback_data="help")
-            ]
-        ]
-    )
     await message.answer(
-        "Привет! 👋 Я твой Telegram-бот.\nВыбери действие ниже:",
-        reply_markup=keyboard
+        "Привет! 👋 Добро пожаловать в <b>Cofeeboo</b> ☕\n\n"
+        "👉 <a href='https://cofeeboo-bot-production.up.railway.app'>Открыть приложение</a>",
+        disable_web_page_preview=True
     )
 
-# --- Обработка нажатий на кнопки ---
-@dp.callback_query()
-async def handle_buttons(callback: types.CallbackQuery):
-    if callback.data == "about":
-        await callback.message.answer("✨ Я демонстрационный бот, созданный на Python с помощью Aiogram!")
-    elif callback.data == "contact":
-        await callback.message.answer("📩 Связаться со мной можно по email: example@example.com")
-    elif callback.data == "help":
-        await callback.message.answer("❓ Просто нажми кнопку или напиши команду, чтобы я ответил!")
-    await callback.answer()
+# === ОБРАБОТКА ВЕБХУКА ===
+async def handle(request):
+    data = await request.json()
+    logging.info(f"📩 update: {data}")
+    update = types.Update.model_validate(data, context={"bot": bot})
+    await dp.feed_update(bot, update)
+    return web.Response(text="ok")
 
-# --- Команда /help ---
-@dp.message(Command("help"))
-async def help_command(message: Message):
-    await message.answer("Я могу отвечать на команды:\n/start — начать\n/help — помощь")
+# === ПРОСТАЯ СТРАНИЦА ДЛЯ ПРОВЕРКИ ===
+async def index(request):
+    return web.Response(text="☕ Cofeeboo bot is running!", content_type="text/html")
 
-# --- Ответ на любые сообщения ---
-@dp.message()
-async def echo_message(message: Message):
-    await message.answer(f"Ты написал: {message.text}")
+# === СТАРТ/ОСТАНОВКА ===
+async def on_startup(app):
+    webhook_url = "https://cofeeboo-bot-production.up.railway.app/webhook"
+    await bot.set_webhook(webhook_url, drop_pending_updates=True)
+    logging.info(f"🌍 Webhook установлен: {webhook_url}")
 
-# --- Запуск ---
-async def main():
-    await dp.start_polling(bot)
+async def on_shutdown(app):
+    await bot.delete_webhook()
+    await bot.session.close()
+
+# === ЗАПУСК СЕРВЕРА ===
+def main():
+    app = web.Application()
+    app.router.add_post("/webhook", handle)
+    app.router.add_get("/", index)
+
+    app.on_startup.append(on_startup)
+    app.on_shutdown.append(on_shutdown)
+
+    # Railway должен увидеть, что сервер слушает порт
+    port = int(os.environ.get("PORT", 8080))
+    logging.info(f"🚀 Starting server on port {port} ...")
+
+    try:
+        web.run_app(app, host="0.0.0.0", port=port)
+    except Exception as e:
+        logging.error(f"❌ Ошибка запуска сервера: {e}")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    # Добавим обработку ошибок при старте
+    try:
+        main()
+    except Exception as e:
+        logging.error(f"🔥 Критическая ошибка при запуске: {e}")
