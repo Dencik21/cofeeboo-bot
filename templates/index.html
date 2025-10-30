@@ -1,204 +1,192 @@
-from aiohttp import web
-import os
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cofeeboo ☕</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-async def home(request):
-    html = """
-    <!DOCTYPE html>
-    <html lang="ru">
-      <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Cofeeboo ☕</title>
-        <script src="https://telegram.org/js/telegram-web-app.js"></script>
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
 
-          body {
-            background: #000;
-            color: #fff;
-            font-family: "Arial", sans-serif;
-            height: 100vh;
-            width: 100vw;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-          }
+      body {
+        background: #000;
+        color: #fff;
+        font-family: "Arial", sans-serif;
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+      }
 
-          /* Видео */
-          video {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            object-fit: cover;
-            z-index: 1;
-            transition: all 1.5s ease-in-out;
-          }
+      /* Видео */
+      video {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        object-fit: cover;
+        z-index: 1;
+        transition: all 1.5s ease-in-out;
+      }
 
-          .video-small {
-            width: 120px; height: 120px;
-            top: 20px; left: 50%;
-            transform: translateX(-50%);
-            border-radius: 50%;
-            position: absolute;
-            z-index: 5;
-            box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
-          }
+      .video-small {
+        width: 120px; height: 120px;
+        top: 20px; left: 50%;
+        transform: translateX(-50%);
+        border-radius: 50%;
+        position: absolute;
+        z-index: 5;
+        box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
+      }
 
-          .overlay {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, #000 100%);
-            z-index: 2;
-            opacity: 0;
-            transition: opacity 1.5s ease-in;
-          }
+      .overlay {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, #000 100%);
+        z-index: 2;
+        opacity: 0;
+        transition: opacity 1.5s ease-in;
+      }
 
-          .overlay.visible { opacity: 1; }
+      .overlay.visible { opacity: 1; }
 
-          .content {
-            position: relative;
-            z-index: 3;
-            opacity: 0;
-            transition: opacity 1.5s ease-in;
-            text-align: center;
-            width: 100%;
-            height: 100%;
-            overflow-y: auto;
-            padding-top: 160px;
-          }
+      .content {
+        position: relative;
+        z-index: 3;
+        opacity: 0;
+        transition: opacity 1.5s ease-in;
+        text-align: center;
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+        padding-top: 160px;
+      }
 
-          .visible { opacity: 1; }
+      .visible { opacity: 1; }
 
-          h1 {
-            font-size: 26px;
-            margin-bottom: 20px;
-            font-weight: 600;
-          }
+      h1 {
+        font-size: 26px;
+        margin-bottom: 20px;
+        font-weight: 600;
+      }
 
-          /* Меню */
-          .menu {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-            padding: 15px;
-          }
+      /* Меню */
+      .menu {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+        padding: 15px;
+      }
 
-          .category { text-align: left; }
+      .category { text-align: left; }
 
-          .category h2 {
-            font-size: 18px;
-            margin-bottom: 8px;
-            color: #ffde9f;
-            text-shadow: 0 0 8px rgba(255, 222, 159, 0.3);
-          }
+      .category h2 {
+        font-size: 18px;
+        margin-bottom: 8px;
+        color: #ffde9f;
+        text-shadow: 0 0 8px rgba(255, 222, 159, 0.3);
+      }
 
-          /* Сетка напитков */
-          .drinks-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 10px;
-            justify-items: center;
-          }
+      /* Сетка напитков */
+      .drinks-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+        justify-items: center;
+      }
 
-          /* Карточка напитка */
-          .drink-card {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 10px;
-            padding: 8px;
-            width: 100px;
-            text-align: center;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-          }
+      /* Карточка напитка */
+      .drink-card {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        padding: 8px;
+        width: 100px;
+        text-align: center;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
 
-          .drink-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-          }
+      .drink-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      }
 
-          .drink-card img {
-            width: 100%;
-            height: 90px;
-            object-fit: cover;
-            border-radius: 6px;
-          }
+      .drink-card img {
+        width: 100%;
+        height: 90px;
+        object-fit: cover;
+        border-radius: 6px;
+      }
 
-          .drink-card h3 {
-            font-size: 13px;
-            margin: 6px 0 3px;
-            color: #fff;
-          }
+      .drink-card h3 {
+        font-size: 13px;
+        margin: 6px 0 3px;
+        color: #fff;
+      }
 
-          .drink-card p {
-            font-size: 12px;
-            color: #bbb;
-            margin: 0;
-          }
+      .drink-card p {
+        font-size: 12px;
+        color: #bbb;
+        margin: 0;
+      }
 
-          .drink-card button {
-            background: #5e3eff;
-            border: none;
-            padding: 5px 8px;
-            border-radius: 6px;
-            color: white;
-            font-size: 12px;
-            margin-top: 6px;
-            cursor: pointer;
-            transition: background 0.3s;
-          }
+      .drink-card button {
+        background: #5e3eff;
+        border: none;
+        padding: 5px 8px;
+        border-radius: 6px;
+        color: white;
+        font-size: 12px;
+        margin-top: 6px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
 
-          .drink-card button:hover { background: #7b5bff; }
+      .drink-card button:hover { background: #7b5bff; }
 
-          /* 📱 Адаптив под мобильные устройства */
-          @media (max-width: 600px) {
-            .drinks-grid {
-              grid-template-columns: repeat(2, 1fr);
-              gap: 12px;
-            }
-            .drink-card { width: 95%; }
-            .drink-card img { height: 80px; }
-            h1 { font-size: 22px; }
-          }
-        </style>
-      </head>
+      /* 📱 Адаптив под мобильные устройства */
+      @media (max-width: 600px) {
+        .drinks-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
+        }
+        .drink-card { width: 95%; }
+        .drink-card img { height: 80px; }
+        h1 { font-size: 22px; }
+      }
+    </style>
+  </head>
 
-      <body>
-        <video id="intro" autoplay muted playsinline onended="shrinkVideo()">
-          <source src="/static/intro.mp4" type="video/mp4" />
-        </video>
+  <body>
+    <video id="intro" autoplay muted playsinline onended="shrinkVideo()">
+      <source src="/static/intro.mp4" type="video/mp4" />
+    </video>
 
-        <div class="overlay" id="overlay"></div>
+    <div class="overlay" id="overlay"></div>
 
-        <div class="content" id="content">
-          <h1>Меню Cofeeboo ☕</h1>
-          <div class="menu"></div>
-        </div>
+    <div class="content" id="content">
+      <h1>Меню Cofeeboo ☕</h1>
+      <div class="menu"></div>
+    </div>
 
-        <script>
-          function shrinkVideo() {
-            const video = document.getElementById("intro");
-            const content = document.getElementById("content");
-            const overlay = document.getElementById("overlay");
+    <script>
+      function shrinkVideo() {
+        const video = document.getElementById("intro");
+        const content = document.getElementById("content");
+        const overlay = document.getElementById("overlay");
 
-            video.classList.add("video-small");
+        video.classList.add("video-small");
 
-            setTimeout(() => {
-              overlay.classList.add("visible");
-              content.classList.add("visible");
-            }, 1000);
-          }
-        </script>
+        setTimeout(() => {
+          overlay.classList.add("visible");
+          content.classList.add("visible");
+        }, 1000);
+      }
+    </script>
 
-        <script src="/static/js/drinks.js?v=2"></script>
-      </body>
-    </html>
-    """
-    return web.Response(text=html, content_type="text/html")
-
-app = web.Application()
-app.router.add_get("/", home)
-
-port = int(os.environ.get("PORT", 8080))
-web.run_app(app, host="0.0.0.0", port=port)
+    <script src="/static/js/drinks.js?v=2"></script>
+  </body>
+</html>
