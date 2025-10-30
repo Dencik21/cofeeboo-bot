@@ -1,0 +1,15 @@
+# Игнорировать виртуальное окружение
+botenv/
+.venv/
+
+# Кеши и временные файлы
+__pycache__/
+*.pyc
+*.pyo
+*.log
+.DS_Store
+
+# Railway, VSCode и системные папки
+.railway/
+.vscode/
+.idea/
